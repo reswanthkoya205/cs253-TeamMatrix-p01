@@ -1,5 +1,6 @@
 ## 9. Predicted-cost model (written before any measurement)
 
+
 ### 9.1 Notation
 - V = vertices, E = edges, d = E/V (average out-degree).
 - i = index of the inserted edge u -> v; E_i = edges after i insertions,

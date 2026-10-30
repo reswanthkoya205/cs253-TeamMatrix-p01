@@ -1,9 +1,5 @@
 # INTERFACE.md: Project 1, Build Ordering and Critical Paths
 
-Team `<team-name>`. Written by the Architect: `<name, roll no., @github>`
-
-This is the agreement the whole team codes against. It was written before any structure existed and is frozen at tag `c1`. If we want to change it later, we do it through a pull request that the Structure A, Structure B and Oracle owners all approve.
-
 ## 1. The short version
 
 - Targets are numbered `0` to `V-1`. An edge `u -> v` means u has to be built before v.

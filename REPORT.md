@@ -127,3 +127,66 @@ Predicted curves in the figures use these frozen constants.
 4. p and ARbar depend on how the generator picks edges; P1 holds only for the
    generator named in section 10.
 
+
+### 9.9 Commit record
+The model above was first committed in 0b516e1 (draft, 2026-10-29) and
+completed in 4ea981e (sections 9.1 to 9.8, 2026-10-30), before any file
+existed in results/raw/.
+
+## 10. Experimental setup
+
+All measurements in this report were taken on one machine, described below.
+
+### 10.1 Hardware
+
+| Item | Value |
+|---|---|
+| Processor | Intel Core i7-1355U (13th gen, hybrid) |
+| Cores / threads | 10 cores (2 performance + 8 efficiency), 12 logical processors |
+| Base clock | 1.70 GHz (turbo frequency varies during runs) |
+| L1 cache (total) | 928 KB |
+| L2 cache (total) | 6.5 MB |
+| L3 cache | 12 MB, shared by all cores |
+| RAM | 16 GB |
+
+### 10.2 Software
+
+| Item | Value |
+|---|---|
+| Host OS | Windows 11 Home, build 26300 |
+| Measurement environment | WSL2, Ubuntu 26.04.1 LTS |
+| Kernel | 6.18.54.1-microsoft-standard-WSL2 |
+| Compiler | g++ 15.2.0 (Ubuntu 15.2.0-16ubuntu1) |
+| Flags | TODO: agreed with the team |
+| Profiler | valgrind 3.26.0, --tool=cachegrind |
+| Python | 3.14.4 (matplotlib, pandas; figures only) |
+
+### 10.3 Measurement protocol
+
+- Timing uses std::chrono::steady_clock.
+- Every timing is the mean of at least 5 runs; the spread (standard
+  deviation) is reported as error bars. TODO: state the final number of runs.
+- The random seed of every run is recorded in the CSV in results/raw/.
+- The laptop was plugged in, set to the "Best performance" power mode, with
+  other applications closed. TODO: confirm before the runs.
+- Runs are not pinned to specific cores. WSL2 exposes the 12 logical
+  processors as 6 identical cores, so performance and efficiency cores cannot
+  be told apart from inside it. The operating system may therefore move a run
+  between core types; this variation is part of the reported spread.
+- Edge generator for the incremental experiments: TODO (name the Adversary's
+  generators used; section 9.8 item 4 refers to this).
+- Graph sizes: V = TODO and E = TODO for the main experiments (at least 10^5
+  vertices and 10^6 edges); calibration runs for fitting the model constants
+  used V = 10^3 to 10^4.
+
+### 10.4 Limitations of the setup
+
+- The machine is a hybrid laptop CPU whose clock frequency changes with
+  temperature and power, so absolute times are not comparable with other
+  machines. Ratios and scaling are the meaningful results.
+- WSL2 runs inside a virtual machine. Hardware cache counters are usually
+  unavailable there, so cache claims use the simulated counts from
+  valgrind --tool=cachegrind.
+- Under WSL2, the processor topology shown by lscpu (6 cores x 2 threads) is a
+  simplification of the real hybrid layout (2 performance + 8 efficiency
+  cores).

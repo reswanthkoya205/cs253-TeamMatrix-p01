@@ -77,3 +77,164 @@ Result runStructureB(const Graph& g, DynamicOrder* out, Counters* c) {
 
     return r;
 }
+
+
+InsertResult insertDependencyB(
+    Graph& g, DynamicOrder& d, int u, int v, Counters* c
+) {
+    InsertResult res;
+
+    if (u == v) {
+        res.createdCycle = true;
+        res.cycle = {u, u};
+        res.lo = d.pos[u];
+        res.hi = d.pos[u];
+        res.affected = 1;
+
+        if (c) {
+            c->regionSize = 1;
+            c->verticesMoved = 0;
+        }
+
+        return res;
+    }
+
+    if (d.pos[u] < d.pos[v]) {
+        g.addEdge(u, v);
+
+        if (c) {
+            c->regionSize = 0;
+            c->verticesMoved = 0;
+        }
+
+        return res;
+    }
+
+    const int lo = d.pos[v];
+    const int hi = d.pos[u];
+
+    res.lo = lo;
+    res.hi = hi;
+
+    const int n = g.n;
+
+    std::vector<char> reachable(n, false);
+
+    std::vector<int> parent(n, -1);
+
+    std::vector<int> st;
+
+    reachable[v] = true;
+    st.push_back(v);
+
+    bool cycleFound = false;
+    int examined = 0;
+
+    while (!st.empty()) {
+        int x = st.back();
+        st.pop_back();
+
+        ++examined;
+
+        if (c) ++c->verticesVisited;
+
+        for (int w : g.adj[x]) {
+            if (c) ++c->edgesScanned;
+
+            int p = d.pos[w];
+
+            if (p < lo || p > hi)
+                continue;
+
+            if (reachable[w])
+                continue;
+
+            reachable[w] = true;
+            parent[w] = x;
+
+
+            if (w == u) {
+                cycleFound = true;
+                break;
+            }
+
+            st.push_back(w);
+        }
+
+        if (cycleFound)
+            break;
+    }
+
+    if (cycleFound) {
+        res.createdCycle = true;
+
+        std::vector<int> path;
+
+        int x = u;
+        while (x != -1) {
+            path.push_back(x);
+            x = parent[x];
+        }
+
+        std::reverse(path.begin(), path.end());
+
+        res.cycle = path;
+        res.cycle.push_back(v);
+
+        res.affected = examined;
+
+        if (c) {
+            c->regionSize = examined;
+            c->verticesMoved = 0;
+        }
+
+        return res;
+    }
+
+    std::vector<int> newOrder;
+    newOrder.reserve(hi - lo + 1);
+
+    for (int i = lo; i <= hi; ++i) {
+        int x = d.ord[i];
+
+        if (!reachable[x])
+            newOrder.push_back(x);
+    }
+
+    for (int i = lo; i <= hi; ++i) {
+        int x = d.ord[i];
+
+        if (reachable[x])
+            newOrder.push_back(x);
+    }
+
+    int moved = 0;
+
+    for (int i = 0; i < (int)newOrder.size(); ++i) {
+        int oldPosition = d.pos[newOrder[i]];
+        int newPosition = lo + i;
+
+        if (oldPosition != newPosition)
+            ++moved;
+    }
+
+    for (int i = 0; i < (int)newOrder.size(); ++i) {
+        int x = newOrder[i];
+
+        d.ord[lo + i] = x;
+        d.pos[x] = lo + i;
+    }
+
+    g.addEdge(u, v);
+
+    res.affected = hi - lo + 1;
+    res.moved = moved;
+
+    if (c) {
+        c->regionSize = res.affected;
+        c->verticesMoved += moved;
+    }
+
+    return res;
+}
+

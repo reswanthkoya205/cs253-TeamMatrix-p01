@@ -68,3 +68,5 @@ Testing/
 .cache/
 .DS_Store
 
+*:Zone.Identifier
+bin/

@@ -123,10 +123,12 @@ void addCommand(Session& s, const std::string& from, const std::string& to, std:
             return;
         }
     }
+    const Counters before = s.c;
     s.c.reset();
     if (s.useB) {
         InsertResult ir = insertDependencyB(s.g, s.d, u, v, &s.c);
         if (ir.createdCycle) {
+            s.c = before;
             printCycleOf(os, ir.cycle, s.names);
             return;
         }
@@ -140,6 +142,7 @@ void addCommand(Session& s, const std::string& from, const std::string& to, std:
         trial.addEdge(u, v);
         Result nr = runStructureA(trial, s.heap, &s.c);
         if (nr.hasCycle) {
+            s.c = before;
             printCycleOf(os, nr.cycle, s.names);
             return;
         }

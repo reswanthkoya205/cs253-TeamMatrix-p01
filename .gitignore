@@ -67,4 +67,7 @@ vcpkg_installed/
 Testing/
 .cache/
 .DS_Store
+
+*:Zone.Identifier
+bin/
 .vscode/

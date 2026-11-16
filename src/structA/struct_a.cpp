@@ -1,4 +1,4 @@
-#include "struct_a.hpp"
+#include "interface.hpp"
 #include "schedule.hpp"
 #include "fifo_queue.hpp"
 #include "min_heap.hpp"

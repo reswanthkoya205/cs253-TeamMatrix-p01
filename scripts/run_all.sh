@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 trap 'echo "FAIL at line $LINENO" >&2' ERR
 run() { local label=$1; shift; printf '\n===== %s =====\n' "$label"; "$@"; printf '%s : PASS\n' "$label"; }
 run Clean make -f Makefile clean

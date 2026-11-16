@@ -110,9 +110,9 @@ void printCycleOf(std::ostream& os, const std::vector<int>& cycle, const std::ve
     printCycle(t, os, &names);
 }
 
-void addCommand(Session& s, const std::string& from, const std::string& to, std::ostream& os) {
-    const int u = findId(s.names, from);
-    const int v = findId(s.names, to);
+void addCommand(Session& s, const std::string& target, const std::string& dependency, std::ostream& os) {
+    const int u = findId(s.names, dependency);
+    const int v = findId(s.names, target);
     if (u < 0 || v < 0) {
         os << "INVALID\n";
         return;
@@ -149,7 +149,7 @@ void addCommand(Session& s, const std::string& from, const std::string& to, std:
         s.g = trial;
         s.r = nr;
     }
-    os << "OK\n";
+    printTopologicalOrder(s.r, os, &s.names);
 }
 
 void statsCommand(const Session& s, std::ostream& os) {
@@ -173,10 +173,12 @@ void interactiveLoop(Session& s, std::istream& in, std::ostream& os) {
         if (cmd == "add") {
             std::string a, b, extra;
             if (!(ls >> a >> b) || (ls >> extra)) {
-                os << "ERROR: usage: add <from> <to>\n";
+                os << "ERROR: usage: add <target> <dependency>\n";
                 continue;
             }
             addCommand(s, a, b, os);
+        } else if (cmd == "show") {
+            printResult(s.r, os, &s.names);
         } else if (cmd == "order") {
             printTopologicalOrder(s.r, os, &s.names);
         } else if (cmd == "schedule") {

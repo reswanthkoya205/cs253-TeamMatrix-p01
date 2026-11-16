@@ -1,24 +1,56 @@
+
 #pragma once
-// Input generators. Owner: Adversary. Implemented in adversary/.
+
+// Input generators. Owner: Adversary.
 // Depend only on Graph and a seed; never call a structure under study.
+
 #include <cstdint>
 #include <utility>
 #include <vector>
+#include <string>
+
 #include "graph.hpp"
 
-// DAG with exponentially many valid topological orders (e.g. layers of independent vertices).
-Graph genExponentialDAG(int n, uint64_t seed);
+// Stores an initial DAG and the edges to be inserted.
+struct InsertionSequence {
+    Graph initialGraph;
+    std::vector<std::pair<int, int>> edgesToInsert;
+};
 
-// Cycle of length cycleLen reachable only through a long chain, so a naive
-// "report the leftover vertices" method returns chain vertices.
-Graph genHiddenCycleBehindChain(int n, int cycleLen, uint64_t seed);
+// DAG with exponentially many valid topological orders.
+Graph genExponentialDAG(
+    int n,
+    uint64_t seed,
+    const std::string& mode,
+    int width
+);
 
-// Insertion sequence for a DAG on n vertices that forces Theta(V) reorder per insertion.
-// Returns the initial graph in `initial` and the edges to insert in order.
-std::vector<std::pair<int, int>> genWorstInsertions(int n, uint64_t seed, Graph& initial);
+// Cycle of length cycleLen reachable through a chain.
+Graph genHiddenCycleBehindChain(
+    int n,
+    int cycleLen,
+    uint64_t seed,
+    int headLen
+);
 
-// Random DAG with controllable in-degree skew (skew = 0 uniform; larger = more skewed).
-Graph genRandomDAG(int n, long long m, double skew, uint64_t seed);
+// Worst-case incremental insertions.
+InsertionSequence genWorstInsertions(
+    int n,
+    uint64_t seed,
+    int chainLen
+);
 
-// Random graph that may contain cycles (for differential tests).
-Graph genRandomGraph(int n, long long m, uint64_t seed);
+// Random DAG with controllable in-degree skew.
+Graph genRandomDAG(
+    int n,
+    int m,
+    double skew,
+    uint64_t seed
+);
+
+// Random graph that may contain cycles.
+Graph genRandomGraph(
+    int n,
+    int m,
+    uint64_t seed
+);

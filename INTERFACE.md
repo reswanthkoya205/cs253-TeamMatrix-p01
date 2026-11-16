@@ -18,7 +18,7 @@ This file is the contract between Structure A, Structure B, the oracle, the adve
 
 ## 2. Header map (`include/`)
 
-All headers are flat in `include/` and compiled with `-Iinclude`. They contain declarations only, except the small data types. Each uses an `#ifndef` guard.
+All headers are flat in `include/` and compiled with `-Iinclude`. They contain declarations only, except the small data types, including `InsertionSequence`. Each uses an `#ifndef` guard.
 
 | Header | Declares | Implemented in | Owner |
 |---|---|---|---|
@@ -31,7 +31,7 @@ All headers are flat in `include/` and compiled with `-Iinclude`. They contain d
 | `schedule.hpp` | `computeSchedule` | `app/` (or `src/common/`) | Architect |
 | `validate.hpp` | `validateOrder`, `validateCycle`, `validateResult`, `validateDynamic`, `resultsEquivalent` | `oracle/` | Oracle owner |
 | `io.hpp` | `readGraph`, `readGraphPlain`, `writeGraph`, `serializeResult`, `print*` | `app/` | Architect |
-| `generators.hpp` | `genExponentialDAG`, `genHiddenCycleBehindChain`, `genWorstInsertions`, `genRandomDAG`, `genRandomGraph` | `adversary/` | Adversary |
+| `generators.hpp` | `InsertionSequence`, `genExponentialDAG`, `genHiddenCycleBehindChain`, `genWorstInsertions`, `genRandomDAG`, `genRandomGraph` | `adversary/` | Adversary |
 
 ## 3. Data types
 
@@ -102,6 +102,17 @@ Invariant: `pos[ord[i]] == i` for every `i`, and `ord` is a permutation of `0 ..
 | `lo`, `hi` | the affected region `[lo, hi]` in the old positions, `lo = pos[v]`, `hi = pos[u]` |
 | `affected` | number of vertices examined in the region |
 | `moved` | number of vertices whose position changed |
+
+### 3.6 `generators.hpp`: `InsertionSequence`
+
+Returned by `genWorstInsertions`. It holds one incremental experiment.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `initialGraph` | `Graph` | the starting DAG, built before any insertion |
+| `edgesToInsert` | `vector<pair<int,int>>` | edges `(u, v)` meaning `u -> v`, to be passed to `insertDependencyB` in order |
+
+The caller copies `initialGraph`, runs `runStructureB` on it to obtain a `DynamicOrder`, then inserts the edges one by one. The generator never calls a structure itself.
 
 ## 4. Function contracts
 
@@ -183,15 +194,33 @@ Every function returns `true` on success. On failure it returns `false` and writ
 
 ### 4.5 `generators.hpp`
 
-All generators are deterministic for a given seed and depend only on `Graph`. They never call a structure.
+```cpp
+struct InsertionSequence {
+    Graph initialGraph;
+    std::vector<std::pair<int, int>> edgesToInsert;
+};
 
-| Function | Produces |
-|---|---|
-| `genExponentialDAG(n, seed)` | a DAG with exponentially many valid topological orders |
-| `genHiddenCycleBehindChain(n, cycleLen, seed)` | a graph whose only cycle is reachable only through a long chain, so reporting leftover vertices gives chain vertices |
-| `genWorstInsertions(n, seed, initial)` | fills `initial` with a starting DAG and returns an edge sequence in which every insertion forces a Theta(V) reorder |
-| `genRandomDAG(n, m, skew, seed)` | a random DAG with controllable in-degree skew (`skew = 0` uniform) |
-| `genRandomGraph(n, m, seed)` | a random graph that may contain cycles, for differential tests |
+Graph genExponentialDAG(int n, uint64_t seed, const std::string& mode, int width);
+Graph genHiddenCycleBehindChain(int n, int cycleLen, uint64_t seed, int headLen);
+InsertionSequence genWorstInsertions(int n, uint64_t seed, int chainLen);
+Graph genRandomDAG(int n, int m, double skew, uint64_t seed);
+Graph genRandomGraph(int n, int m, uint64_t seed);
+```
+
+All generators are deterministic for a given seed and depend only on `Graph` (and `<cstdint>`, `<string>`, `<utility>`, `<vector>`). They never call a structure. The header has **no default arguments**, so every parameter must be passed by the caller. The `seed` parameter is `uint64_t`.
+
+| Function | Parameters | Produces |
+|---|---|---|
+| `genExponentialDAG` | `n` vertices; `seed`; `mode` selects the construction family; `width` is the width parameter of that construction **[confirm with Adversary]** | a DAG with exponentially many valid topological orders |
+| `genHiddenCycleBehindChain` | `n` vertices; `cycleLen` is the length of the cycle; `seed`; `headLen` is the length of the chain that leads to the cycle **[confirm with Adversary]** | a graph whose only cycle is reachable only through a long chain, so reporting leftover vertices gives chain vertices |
+| `genWorstInsertions` | `n` vertices; `seed`; `chainLen` is the length of the chain in the starting DAG **[confirm with Adversary]** | an `InsertionSequence` whose `initialGraph` is a DAG and whose `edgesToInsert` force a Theta(V) reorder on every insertion |
+| `genRandomDAG` | `n` vertices; `m` edges; `skew` in-degree skew (`0` = uniform); `seed` | a random DAG with controllable in-degree skew |
+| `genRandomGraph` | `n` vertices; `m` edges; `seed` | a random graph that may contain cycles, for differential tests |
+
+Notes:
+- The set of valid `mode` strings for `genExponentialDAG` is defined by the Adversary and listed in `adversary/README` **[to be recorded here]**. An unknown `mode` behaves as specified by the Adversary (recommended: throw `std::invalid_argument`).
+- Every graph returned satisfies the invariants of section 5.1. Every `(u, v)` in `edgesToInsert` has `0 <= u, v < n`, as `insertDependencyB` requires.
+- `genWorstInsertions` replaces the earlier "fills `initial`" signature: the starting DAG is now returned inside `InsertionSequence`.
 
 ## 5. Structural invariants
 
@@ -323,7 +352,7 @@ Rules:
 
 1. A and B never call each other.
 2. The oracle never calls `runStructureA`, `runStructureB`, `insertDependencyB` or `computeSchedule`. A CI step greps `oracle/` for these names.
-3. The adversary's generators depend only on `Graph` and a seed. They never call a structure.
+3. The adversary's generators depend only on `Graph` and a seed (plus `<cstdint>`, `<string>`, `<utility>`, `<vector>`). They never call a structure. Their one extra type, `InsertionSequence`, contains only a `Graph` and a vector of edge pairs.
 4. After c1, a change to any header goes through a pull request that every implementer reviews.
 
 ## 11. Implementation notes
@@ -331,5 +360,5 @@ Rules:
 - **Structure A owner:** when Kahn halts early, the remaining vertices include vertices downstream of the cycle. Build a local reverse adjacency for the remaining set and walk predecessors until a vertex repeats. A forward walk can dead-end in the chain.
 - **Structure B owner:** use an explicit stack with a per-vertex edge index. Never modify `g` before knowing there is no cycle.
 - **Oracle owner:** write the slow methods first and keep them simple. Their value is that they are obviously right.
-- **Adversary:** each generator must come with a short argument, in derivation D5, that its output has the intended bad property by construction.
+- **Adversary:** each generator must come with a short argument, in derivation D5, that its output has the intended bad property by construction. The argument must say how the extra parameters (`mode`, `width`, `headLen`, `chainLen`) enter the construction, and for `genWorstInsertions` why every edge in `edgesToInsert` has `pos[u] > pos[v]` at the time it is inserted and forces a region of size Theta(V).
 - **Analyst:** the `Counters` fields in section 3.4 are the variables of the predicted-cost model.

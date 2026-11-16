@@ -1,0 +1,142 @@
+--------------------------------------------------------------------------------
+-- Metadata
+--------------------------------------------------------------------------------
+Invocation:       /usr/bin/cg_annotate cachegrind.out.34580 cachegrind.out.34606
+Command 1:        ./bin/benchmark_structs
+Command 2:        ./bin/benchmark_incremental
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Threshold:        0.1%
+Annotation:       on
+
+--------------------------------------------------------------------------------
+-- Summary
+--------------------------------------------------------------------------------
+Ir____________________ 
+
+1,996,764,465 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+-- File:function summary
+--------------------------------------------------------------------------------
+  Ir__________________________  file:function
+
+< 1,874,066,502 (93.9%, 93.9%)  ???:
+  1,697,362,578 (85.0%)           genRandomDAG(int, int, double, unsigned long)
+     71,543,135  (3.6%)           runStructureA(Graph const&, bool, Counters*)
+     36,564,350  (1.8%)           computeSchedule(Graph const&, std::vector<int, std::allocator<int> > const&, Result&, Counters*)
+     23,502,216  (1.2%)           void std::vector<int, std::allocator<int> >::_M_realloc_append<int const&>(int const&)
+     13,965,015  (0.7%)           runStructureB(Graph const&, DynamicOrder*, Counters*)
+      8,081,152  (0.4%)           operator new(unsigned long)
+      6,407,800  (0.3%)           ???
+      3,560,422  (0.2%)           std::_Hashtable<unsigned long, unsigned long, std::allocator<unsigned long>, std::__detail::_Identity, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<unsigned long, false>*, unsigned long)
+      2,897,430  (0.1%)           std::vector<long long, std::allocator<long long> >::_M_fill_assign(unsigned long, long long const&)
+      2,643,772  (0.1%)           std::pair<std::__detail::_Node_iterator<unsigned long, true, false>, bool> std::_Hashtable<unsigned long, unsigned long, std::allocator<unsigned long>, std::__detail::_Identity, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_emplace_uniq<unsigned long>(unsigned long&&)
+      2,140,640  (0.1%)           std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul>::_M_gen_rand()
+
+<    98,741,389  (4.9%, 98.8%)  ./malloc/./malloc/malloc.c:
+     29,047,431  (1.5%)           _int_malloc
+     20,530,431  (1.0%)           _int_free_merge_chunk
+     16,627,866  (0.8%)           free
+     12,127,312  (0.6%)           malloc
+      6,194,454  (0.3%)           _int_free_maybe_trim
+      4,895,464  (0.2%)           _int_free_chunk
+      4,486,087  (0.2%)           unlink_chunk.isra.0
+      4,432,806  (0.2%)           __libc_malloc2
+
+<     5,421,110  (0.3%, 99.1%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:
+      5,418,892  (0.3%)           __memcpy_avx_unaligned_erms
+
+<     4,818,048  (0.2%, 99.3%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms
+
+<     4,356,891  (0.2%, 99.5%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma
+
+--------------------------------------------------------------------------------
+-- Function:file summary
+--------------------------------------------------------------------------------
+  Ir__________________________  function:file
+
+> 1,697,362,578 (85.0%, 85.0%)  genRandomDAG(int, int, double, unsigned long):???
+
+>    71,543,135  (3.6%, 88.6%)  runStructureA(Graph const&, bool, Counters*):???
+
+>    36,564,350  (1.8%, 90.4%)  computeSchedule(Graph const&, std::vector<int, std::allocator<int> > const&, Result&, Counters*):???
+
+>    29,047,431  (1.5%, 91.9%)  _int_malloc:./malloc/./malloc/malloc.c
+
+>    23,502,216  (1.2%, 93.1%)  void std::vector<int, std::allocator<int> >::_M_realloc_append<int const&>(int const&):???
+
+>    20,530,431  (1.0%, 94.1%)  _int_free_merge_chunk:./malloc/./malloc/malloc.c
+
+>    17,400,834  (0.9%, 95.0%)  free:
+     16,627,866  (0.8%)           ./malloc/./malloc/malloc.c
+
+>    13,965,015  (0.7%, 95.7%)  runStructureB(Graph const&, DynamicOrder*, Counters*):???
+
+>    12,127,312  (0.6%, 96.3%)  malloc:./malloc/./malloc/malloc.c
+
+>     8,081,152  (0.4%, 96.7%)  operator new(unsigned long):???
+
+>     6,407,800  (0.3%, 97.0%)  ???:???
+
+>     6,194,454  (0.3%, 97.3%)  _int_free_maybe_trim:./malloc/./malloc/malloc.c
+
+>     5,418,892  (0.3%, 97.6%)  __memcpy_avx_unaligned_erms:./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
+
+>     4,895,464  (0.2%, 97.8%)  _int_free_chunk:./malloc/./malloc/malloc.c
+
+>     4,854,978  (0.2%, 98.1%)  __libc_malloc2:
+      4,432,806  (0.2%)           ./malloc/./malloc/malloc.c
+
+>     4,818,048  (0.2%, 98.3%)  __memset_avx2_unaligned_erms:./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+
+>     4,576,936  (0.2%, 98.5%)  __ieee754_pow_fma:
+      4,356,891  (0.2%)           ./math/../sysdeps/ieee754/dbl-64/e_pow.c
+
+>     4,486,087  (0.2%, 98.7%)  unlink_chunk.isra.0:./malloc/./malloc/malloc.c
+
+>     3,560,422  (0.2%, 98.9%)  std::_Hashtable<unsigned long, unsigned long, std::allocator<unsigned long>, std::__detail::_Identity, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_insert_unique_node(unsigned long, unsigned long, std::__detail::_Hash_node<unsigned long, false>*, unsigned long):???
+
+>     2,897,430  (0.1%, 99.1%)  std::vector<long long, std::allocator<long long> >::_M_fill_assign(unsigned long, long long const&):???
+
+>     2,643,772  (0.1%, 99.2%)  std::pair<std::__detail::_Node_iterator<unsigned long, true, false>, bool> std::_Hashtable<unsigned long, unsigned long, std::allocator<unsigned long>, std::__detail::_Identity, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, true, true> >::_M_emplace_uniq<unsigned long>(unsigned long&&):???
+
+>     2,140,640  (0.1%, 99.3%)  std::mersenne_twister_engine<unsigned long, 64ul, 312ul, 156ul, 31ul, 13043109905998158313ul, 29ul, 6148914691236517205ul, 17ul, 8202884508482404352ul, 37ul, 18444473444759240704ul, 43ul, 6364136223846793005ul>::_M_gen_rand():???
+
+--------------------------------------------------------------------------------
+-- Annotated source file: ./malloc/./malloc/malloc.c
+--------------------------------------------------------------------------------
+Unannotated because one or more of these original files are unreadable:
+- ./malloc/./malloc/malloc.c
+
+--------------------------------------------------------------------------------
+-- Annotated source file: ./math/../sysdeps/ieee754/dbl-64/e_pow.c
+--------------------------------------------------------------------------------
+Unannotated because one or more of these original files are unreadable:
+- ./math/../sysdeps/ieee754/dbl-64/e_pow.c
+
+--------------------------------------------------------------------------------
+-- Annotated source file: ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
+--------------------------------------------------------------------------------
+Unannotated because one or more of these original files are unreadable:
+- ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
+
+--------------------------------------------------------------------------------
+-- Annotated source file: ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+--------------------------------------------------------------------------------
+Unannotated because one or more of these original files are unreadable:
+- ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S
+
+--------------------------------------------------------------------------------
+-- Annotation summary
+--------------------------------------------------------------------------------
+Ir___________________ 
+
+            0            annotated: files known & above threshold & readable, line numbers known
+            0            annotated: files known & above threshold & readable, line numbers unknown
+            0          unannotated: files known & above threshold & two or more non-identical
+  113,337,438  (5.7%)  unannotated: files known & above threshold & unreadable 
+    9,360,525  (0.5%)  unannotated: files known & below threshold
+1,874,066,502 (93.9%)  unannotated: files unknown
+

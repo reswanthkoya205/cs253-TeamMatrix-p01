@@ -1,0 +1,4 @@
+parse   3 :
+assets  4 :
+compile 5 : parse
+link    2 : compile assets

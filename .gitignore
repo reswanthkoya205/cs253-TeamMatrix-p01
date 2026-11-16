@@ -70,3 +70,4 @@ Testing/
 
 *:Zone.Identifier
 bin/
+.vscode/

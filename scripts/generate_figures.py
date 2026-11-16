@@ -18,7 +18,7 @@ if os.path.exists(struct_csv):
     plt.figure(figsize=(9, 6))
     
     # Pick a representative vertex size (e.g., the largest or middle scale) for a clean 2D plot
-    target_v = df_struct['V'].max()
+    target_v = df_struct['V'].min()
     sub_df = df_struct[df_struct['V'] == target_v]
     
     # Group by SkewFactor and Structure to calculate mean & std across the 5 runs
@@ -71,12 +71,21 @@ if os.path.exists(increm_csv):
                      color='#1f77b4', linewidth=2)
             
         if 'RecompTimeMs' in df_inc.columns:
-            # Filter out zero/empty recomputation samples if using periodic sampling
+            # Filter out zero/empty recomputation samples to isolate actual sample points
             rec_data = df_inc[df_inc['RecompTimeMs'] > 0]
+            
+            # 1. Thick red vertical drop lines at each sample point
+            plt.vlines(x=rec_data['InsertionIndex'], ymin=df_inc['IncrementalTimeMs'].min(), ymax=rec_data['RecompTimeMs'],
+                       color='#d62728', linestyle='-', linewidth=1.5, alpha=0.7)
+            
+            # 2. Red dotted trend line connecting ONLY the sampled recomputation points
+            plt.plot(rec_data['InsertionIndex'], rec_data['RecompTimeMs'], color='#d62728', 
+                     linestyle=':', marker='x', markersize=7, linewidth=1.8,
+                     label='Full Recomputation Trend', zorder=5)
+            
+            # 3. Scatter markers for the crosses
             plt.scatter(rec_data['InsertionIndex'], rec_data['RecompTimeMs'], color='#d62728', 
-                        label='Full Recomputation (Sampled)', marker='x', s=50, zorder=5)
-            plt.plot(df_inc['InsertionIndex'], df_inc['RecompTimeMs'], color='#d62728', 
-                     linestyle='--', alpha=0.5, label='Full Recomputation Trend')
+                        marker='x', s=50, zorder=6)
 
     plt.yscale('log')
     plt.xlabel('Edge Insertion Index', fontsize=12, fontweight='bold')

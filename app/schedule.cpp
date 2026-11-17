@@ -28,6 +28,7 @@ void computeSchedule(const Graph& g, const std::vector<int>& order, Result& r, C
 
     for (std::size_t i = order.size(); i-- > 0;) {
         const int u = order[i];
+        if (c) c->verticesVisited++;
         ll lft = r.projectDuration;
         for (std::size_t k = 0; k < g.adj[u].size(); ++k) {
             const int v = g.adj[u][k];
@@ -41,16 +42,19 @@ void computeSchedule(const Graph& g, const std::vector<int>& order, Result& r, C
 
     int cur = NONE;
     for (int v = 0; v < n; ++v) {
+        if (c) c->verticesVisited++;
         if (r.est[v] == 0 && r.slack[v] == 0) {
             cur = v;
             break;
         }
     }
     while (cur != NONE) {
+        if (c) c->verticesVisited++;
         r.criticalPath.push_back(cur);
         int next = NONE;
         for (std::size_t k = 0; k < g.adj[cur].size(); ++k) {
             const int v = g.adj[cur][k];
+            if (c) c->edgesScanned++;
             if (r.slack[v] == 0 && r.est[v] == r.eft[cur] && (next == NONE || v < next)) next = v;
         }
         cur = next;

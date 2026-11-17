@@ -1,81 +1,64 @@
-# ==============================================================================
-# CS 253 / MA 253 Lab Project 1 Makefile
-# Team Matrix - Build System (Analyst + Oracle Integrated)
-# ==============================================================================
-
-# Compiler & Flags
-CXX       ?= g++
-CXXFLAGS  := -std=c++17 -O3 -Wall -Wextra -Iinclude -Isrc
-LDFLAGS   := 
-
-# Target Directories
+# CS253 / MA253 Lab Project 1 - Team Matrix
+CXX ?= g++
+CXXFLAGS ?= -std=c++17 -O3 -Wall -Wextra
+CPPFLAGS += -Iinclude -Isrc
+LDFLAGS ?=
+LDLIBS ?=
+.DEFAULT_GOAL := all
 BUILD_DIR := build
-BIN_DIR   := bin
-RAW_DIR   := results/raw
-FIG_DIR   := results/figures
+BIN_DIR := bin
+RAW_DIR := results/raw
+FIG_DIR := results/figures
 
-# Source files & Objects
-ADVERSARY_SRCS := adversary/generators.cpp
-STRUCT_A_SRCS  := src/structA/struct_a.cpp
-STRUCT_B_SRCS  := src/structB/struct_b.cpp
-APP_SRCS       := app/io.cpp app/schedule.cpp
-ORACLE_SRCS    := oracle/oracle.cpp oracle/validators.cpp
+CORE := src/structA/struct_a.cpp src/structB/struct_b.cpp app/io.cpp app/schedule.cpp
+SUPPORT := adversary/generators.cpp oracle/oracle.cpp oracle/validators.cpp
+TEST_SRCS := $(wildcard tests/test_*.cpp) oracle/differential_test.cpp
+BENCH_SRCS := bench/benchmark_structs.cpp bench/benchmark_incremental.cpp
+APP_BIN := $(BIN_DIR)/app
+TEST_BINS := $(addprefix $(BIN_DIR)/,$(notdir $(TEST_SRCS:.cpp=)))
+BENCH_BINS := $(addprefix $(BIN_DIR)/,$(notdir $(BENCH_SRCS:.cpp=)))
+obj = $(addprefix $(BUILD_DIR)/,$(1:.cpp=.o))
+ALL_OBJS := $(call obj,$(CORE) $(SUPPORT) $(TEST_SRCS) $(BENCH_SRCS) app/main.cpp)
 
-# Executable Targets
-BENCH_STRUCTS_BIN  := $(BIN_DIR)/benchmark_structs
-BENCH_INCREM_BIN   := $(BIN_DIR)/benchmark_incremental
-TEST_ORACLE_BIN    := $(BIN_DIR)/test_oracle
-
-.PHONY: all clean test bench directories help
-
-# Default Target (building benchmarks and oracle tests)
-all: directories $(TEST_ORACLE_BIN) $(BENCH_STRUCTS_BIN) $(BENCH_INCREM_BIN)
-
-# Ensure Required Directories Exist
+.PHONY: all app tests test bench benchmarks clean directories help
+all: directories app tests benchmarks
+app: $(APP_BIN)
+tests: $(TEST_BINS)
+benchmarks: $(BENCH_BINS)
 directories:
 	@mkdir -p $(BUILD_DIR) $(BIN_DIR) $(RAW_DIR) $(FIG_DIR)
 
-# ------------------------------------------------------------------------------
-# Executable Build Rules
-# ------------------------------------------------------------------------------
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-# 1. Oracle & Differential Tests (excluding differential_test.cpp main conflict)
-$(TEST_ORACLE_BIN): $(ORACLE_SRCS) $(STRUCT_A_SRCS) $(STRUCT_B_SRCS) $(ADVERSARY_SRCS) $(APP_SRCS) tests/test_oracle.cpp | directories
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+$(APP_BIN): $(call obj,app/main.cpp $(CORE)) | directories
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-# 2. Analyst Benchmark 1: Structure Comparison
-$(BENCH_STRUCTS_BIN): bench/benchmark_structs.cpp $(STRUCT_A_SRCS) $(STRUCT_B_SRCS) $(ADVERSARY_SRCS) $(APP_SRCS) | directories
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+$(BIN_DIR)/test_%: $(BUILD_DIR)/tests/test_%.o $(call obj,$(CORE) $(SUPPORT)) | directories
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-# 3. Analyst Benchmark 2: Incremental Maintenance
-$(BENCH_INCREM_BIN): bench/benchmark_incremental.cpp $(STRUCT_A_SRCS) $(STRUCT_B_SRCS) $(ADVERSARY_SRCS) $(APP_SRCS) | directories
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+$(BIN_DIR)/differential_test: $(call obj,oracle/differential_test.cpp $(CORE) $(SUPPORT)) | directories
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-# ------------------------------------------------------------------------------
-# Helper Commands
-# ------------------------------------------------------------------------------
+$(BIN_DIR)/benchmark_%: $(BUILD_DIR)/bench/benchmark_%.o $(call obj,$(CORE) $(SUPPORT)) | directories
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-# Run Unit & Differential Tests (Oracle)
-test: $(TEST_ORACLE_BIN)
-	@echo "[Testing] Running Oracle Differential Tests..."
-	./$(TEST_ORACLE_BIN)
+.SECONDARY: $(ALL_OBJS)
+-include $(ALL_OBJS:.o=.d)
 
-# Run Benchmarks
-bench: $(BENCH_STRUCTS_BIN) $(BENCH_INCREM_BIN)
-	@echo "[Benchmarking] Running Analyst Benchmarks..."
-	./$(BENCH_STRUCTS_BIN)
-	./$(BENCH_INCREM_BIN)
-
-# Clean Build Outputs
+test: tests
+	@set -e; for t in $(TEST_BINS); do echo "[Testing] $$t"; ./$$t; done
+bench: benchmarks
+	./$(BIN_DIR)/benchmark_structs
+	./$(BIN_DIR)/benchmark_incremental
 clean:
-	@echo "[Clean] Removing build artifacts and binaries..."
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
-	@echo "[Clean] Done."
-
-# Help Message
 help:
-	@echo "Available Makefile targets:"
-	@echo "  make          - Build all test and benchmark binaries"
-	@echo "  make test     - Build and execute oracle differential tests"
-	@echo "  make bench    - Build and execute analyst benchmarks"
-	@echo "  make clean    - Remove binary and build directories"
+	@echo 'make             Build application, tests and benchmarks'
+	@echo 'make app         Build bin/app'
+	@echo 'make tests       Build all test executables'
+	@echo 'make test        Build and run all tests'
+	@echo 'make benchmarks  Build benchmark executables'
+	@echo 'make bench       Build and run benchmarks'
+	@echo 'make clean       Remove build and bin directories'
